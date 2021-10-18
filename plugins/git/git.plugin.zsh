@@ -32,27 +32,14 @@ function work_in_progress() {
 # Check if main exists and use instead of master
 function git_main_branch() {
   command git rev-parse --git-dir &>/dev/null || return
-  local ref
-  for ref in refs/{heads,remotes/{origin,upstream}}/{main,trunk}; do
-    if command git show-ref -q --verify $ref; then
-      echo ${ref:t}
-      return
-    fi
-  done
-  echo master
-}
-
-# Check for develop and similarly named branches
-function git_develop_branch() {
-  command git rev-parse --git-dir &>/dev/null || return
   local branch
-  for branch in dev devel development; do
+  for branch in main trunk; do
     if command git show-ref -q --verify refs/heads/$branch; then
       echo $branch
       return
     fi
   done
-  echo develop
+  echo master
 }
 
 #
@@ -62,7 +49,7 @@ function git_develop_branch() {
 
 alias g='git'
 
-alias ga='git add'
+alias ga='git add .'
 alias gaa='git add --all'
 alias gapa='git add --patch'
 alias gau='git add --update'
@@ -73,7 +60,7 @@ alias gapt='git apply --3way'
 alias gb='git branch'
 alias gba='git branch -a'
 alias gbd='git branch -d'
-alias gbda='git branch --no-color --merged | command grep -vE "^([+*]|\s*($(git_main_branch)|$(git_develop_branch))\s*$)" | command xargs git branch -d 2>/dev/null'
+alias gbda='git branch --no-color --merged | command grep -vE "^(\+|\*|\s*($(git_main_branch)|development|develop|devel|dev)\s*$)" | command xargs -n 1 git branch -d'
 alias gbD='git branch -D'
 alias gbl='git blame -b -w'
 alias gbnm='git branch --no-merged'
@@ -84,10 +71,11 @@ alias gbsg='git bisect good'
 alias gbsr='git bisect reset'
 alias gbss='git bisect start'
 
-alias gc='git commit -v'
+# alias gc='git commit -v'
 alias gc!='git commit -v --amend'
 alias gcn!='git commit -v --no-edit --amend'
-alias gca='git commit -v -a'
+# alias gca='git commit -v -a'
+alias gca='git commit --amend'
 alias gca!='git commit -v -a --amend'
 alias gcan!='git commit -v -a --no-edit --amend'
 alias gcans!='git commit -v -a -s --no-edit --amend'
@@ -97,20 +85,13 @@ alias gcas='git commit -a -s'
 alias gcasm='git commit -a -s -m'
 alias gcb='git checkout -b'
 alias gcf='git config --list'
-
-function gccd() {
-  command git clone --recurse-submodules "$@"
-  [[ -d "$_" ]] && cd "$_" || cd "${${_:t}%.git}"
-}
-compdef _git gccd=git-clone
-
-alias gcl='git clone --recurse-submodules'
+alias gcl='git clone'
 alias gclean='git clean -id'
 alias gpristine='git reset --hard && git clean -dffx'
-alias gcm='git checkout $(git_main_branch)'
-alias gcd='git checkout $(git_develop_branch)'
-alias gcmsg='git commit -m'
-alias gco='git checkout'
+# alias gcm='git checkout $(git_main_branch)'
+alias gcd='git checkout develop'
+alias gcm='git commit -m'
+alias gc='git checkout'
 alias gcor='git checkout --recurse-submodules'
 alias gcount='git shortlog -sn'
 alias gcp='git cherry-pick'
@@ -218,44 +199,44 @@ alias glgg='git log --graph'
 alias glgga='git log --graph --decorate --all'
 alias glgm='git log --graph --max-count=10'
 alias glo='git log --oneline --decorate'
-alias glol="git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset'"
-alias glols="git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset' --stat"
+alias glol="git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'"
+alias glols="git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --stat"
 alias glod="git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ad) %C(bold blue)<%an>%Creset'"
 alias glods="git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ad) %C(bold blue)<%an>%Creset' --date=short"
-alias glola="git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%ar) %C(bold blue)<%an>%Creset' --all"
+alias glola="git log --graph --pretty='%Cred%h%Creset -%C(auto)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset' --all"
 alias glog='git log --oneline --decorate --graph'
 alias gloga='git log --oneline --decorate --graph --all'
 alias glp="_git_log_prettily"
 
 alias gm='git merge'
 alias gmom='git merge origin/$(git_main_branch)'
-alias gmtl='git mergetool --no-prompt'
-alias gmtlvim='git mergetool --no-prompt --tool=vimdiff'
+alias gmt='git mergetool --no-prompt'
+alias gmtvim='git mergetool --no-prompt --tool=vimdiff'
 alias gmum='git merge upstream/$(git_main_branch)'
 alias gma='git merge --abort'
 
 alias gp='git push'
 alias gpd='git push --dry-run'
 alias gpf='git push --force-with-lease'
-alias gpf!='git push --force'
+alias gpff='git push --force'
 alias gpoat='git push origin --all && git push origin --tags'
 alias gpr='git pull --rebase'
 alias gpu='git push upstream'
 alias gpv='git push -v'
 
-alias gr='git remote'
-alias gra='git remote add'
+# alias gr='git remote'
+# alias gra='git remote add'
 alias grb='git rebase'
 alias grba='git rebase --abort'
 alias grbc='git rebase --continue'
-alias grbd='git rebase $(git_develop_branch)'
+alias grbd='git rebase develop'
 alias grbi='git rebase -i'
 alias grbm='git rebase $(git_main_branch)'
 alias grbom='git rebase origin/$(git_main_branch)'
 alias grbo='git rebase --onto'
 alias grbs='git rebase --skip'
 alias grev='git revert'
-alias grh='git reset'
+alias gr='git reset'
 alias grhh='git reset --hard'
 alias groh='git reset origin/$(git_current_branch) --hard'
 alias grm='git rm'
@@ -281,9 +262,9 @@ alias gss='git status -s'
 alias gst='git status'
 
 # use the default stash push on git 2.13 and newer
-is-at-least 2.13 "$git_version" \
-  && alias gsta='git stash push' \
-  || alias gsta='git stash save'
+# is-at-least 2.13 "$git_version" \
+#   && alias gsta='git stash push' \
+#   || alias gsta='git stash save'
 
 alias gstaa='git stash apply'
 alias gstc='git stash clear'
@@ -292,7 +273,7 @@ alias gstl='git stash list'
 alias gstp='git stash pop'
 alias gsts='git stash show --text'
 alias gstu='gsta --include-untracked'
-alias gstall='git stash --all'
+alias gsta='git stash'
 alias gsu='git submodule update'
 alias gsw='git switch'
 alias gswc='git switch -c'
@@ -319,6 +300,11 @@ alias gamc='git am --continue'
 alias gams='git am --skip'
 alias gama='git am --abort'
 alias gamscp='git am --show-current-patch'
+
+alias gv="echo rotan"
+function grh() {
+  gr HEAD~$1
+}
 
 function grename() {
   if [[ -z "$1" || -z "$2" ]]; then
