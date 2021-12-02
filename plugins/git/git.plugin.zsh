@@ -89,7 +89,8 @@ alias gcl='git clone'
 alias gclean='git clean -id'
 alias gpristine='git reset --hard && git clean -dffx'
 # alias gcm='git checkout $(git_main_branch)'
-alias gcd='git checkout develop'
+# git checkout default
+alias gcd='git checkout `git branch -rl "*/HEAD" | rev | cut -d/ -f1 | rev`'
 alias gcm='git commit -m'
 alias gc='git checkout'
 alias gcor='git checkout --recurse-submodules'
@@ -177,7 +178,7 @@ function ggu() {
 compdef _git ggu=git-checkout
 
 alias ggpur='ggu'
-alias ggpull='git pull origin "$(git_current_branch)"'
+alias ggpull='git pull --rebase origin "$(git_current_branch)"'
 alias ggpush='git push origin "$(git_current_branch)"'
 
 alias ggsup='git branch --set-upstream-to=origin/$(git_current_branch)'
